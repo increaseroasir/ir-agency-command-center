@@ -61,6 +61,7 @@ export default function Dashboard() {
   const totalLeads = insights.reduce((s, r) => s + r.leads, 0);
   const overallCpl = totalLeads > 0 ? totalSpend / totalLeads : null;
   const greenCount = insights.filter((r) => r.cplColor === 'green').length;
+  const orangeCount = insights.filter((r) => r.cplColor === 'orange').length;
   const redCount = insights.filter((r) => r.cplColor === 'red').length;
 
   return (
@@ -151,11 +152,13 @@ export default function Dashboard() {
           <div className="ir-card p-4">
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2 h-2 rounded-full bg-[#22C55E]" />
-              <span className="text-xs text-[#71717A] uppercase tracking-wider">Green / Red</span>
+              <span className="text-xs text-[#71717A] uppercase tracking-wider">CPL Tiers</span>
             </div>
-            <p className="text-xl font-semibold tabular-nums">
+            <p className="text-xl font-semibold tabular-nums flex items-baseline gap-1.5">
               <span className="text-[#22C55E]">{greenCount}</span>
-              <span className="text-[#71717A] mx-1">/</span>
+              <span className="text-[#71717A] text-sm">/</span>
+              <span className="text-[#F97316]">{orangeCount}</span>
+              <span className="text-[#71717A] text-sm">/</span>
               <span className="text-[#EF4444]">{redCount}</span>
             </p>
           </div>

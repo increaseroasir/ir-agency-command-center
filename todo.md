@@ -86,4 +86,10 @@
 - [x] Added dedicated regression describe block: "GHL contactName field — regression guard"
 - [x] 7 new tests: name=undefined rejected, name ignored (contactName used), contactName counts, firstName+lastName fallback, whitespace-only rejected, realistic 3/6 mix
 - [x] 36 tests passing (up from 29)
-- [ ] Commit to GitHub
+- [x] Committed to GitHub (commit b7f429e)
+
+## Stat Card Three-Tier Update (Session 5)
+- [x] Updated CPL Tiers stat card to show green / orange / red as three separate colored numbers
+- [x] orangeCount computed from insights (cplColor === 'orange')
+- [x] TypeScript clean, 36 tests passing
+- [ ] Save checkpoint, push to GitHub, and republish
