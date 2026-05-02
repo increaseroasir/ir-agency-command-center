@@ -21,7 +21,10 @@ const GHL_BASE = 'https://services.leadconnectorhq.com';
 
 export interface GhlContact {
   id: string;
-  name: string | null;
+  // GHL API returns the full name as 'contactName', not 'name'
+  contactName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
   email: string | null;
   phone: string | null;
   dateAdded: string;
@@ -114,13 +117,17 @@ export async function fetchGhlLeadCount(
     }
   }
 
-  // Lead definition: name + email + phone all non-null and non-empty after trim
-  const leads = inRangeContacts.filter(
-    (c) =>
-      c.name && c.name.trim() !== '' &&
+  // Lead definition: name + email + phone all non-null and non-empty after trim.
+  // GHL API returns the full name as 'contactName' (not 'name').
+  // Fall back to firstName+lastName if contactName is absent.
+  const leads = inRangeContacts.filter((c) => {
+    const fullName = (c.contactName ?? `${c.firstName ?? ''} ${c.lastName ?? ''}`).trim();
+    return (
+      fullName !== '' &&
       c.email && c.email.trim() !== '' &&
       c.phone && c.phone.trim() !== ''
-  );
+    );
+  });
 
   return leads.length;
 }

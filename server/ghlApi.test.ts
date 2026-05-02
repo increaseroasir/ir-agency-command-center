@@ -16,11 +16,14 @@ const { fetchGhlLeadCount } = await import("./lib/ghlApi");
 const LOCATION_ID = "test-location-123";
 const PRIVATE_TOKEN = "pit-test-token";
 
-// Helper to build a mock contact
+// Helper to build a mock contact.
+// GHL API returns 'contactName' (not 'name') for the full contact name.
 function makeContact(id: string, dateAdded: string, hasAll = true) {
   return {
     id,
-    name: hasAll ? "John Doe" : null,
+    contactName: hasAll ? "John Doe" : null,
+    firstName: hasAll ? "John" : null,
+    lastName: hasAll ? "Doe" : null,
     email: hasAll ? "john@example.com" : null,
     phone: hasAll ? "+15551234567" : null,
     dateAdded,
@@ -115,6 +118,27 @@ describe("fetchGhlLeadCount — early-exit pagination", () => {
     const count = await fetchGhlLeadCount(LOCATION_ID, PRIVATE_TOKEN, sinceMs, untilMs);
     // Only c2 is in range
     expect(count).toBe(1);
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+  });
+
+  it("counts leads using contactName field (not name)", async () => {
+    const sinceMs = new Date("2026-04-02T00:00:00.000Z").getTime();
+    const untilMs = new Date("2026-05-02T23:59:59.999Z").getTime();
+
+    const contacts = [
+      // Has contactName + email + phone → qualified lead
+      { id: "c1", contactName: "elma", email: "elma@example.com", phone: "+13528715458", dateAdded: "2026-04-20T10:00:00.000Z" },
+      // name field is undefined (as GHL returns it) — should NOT count
+      { id: "c2", name: undefined, contactName: null, email: "test@example.com", phone: "+15551234567", dateAdded: "2026-04-18T10:00:00.000Z" },
+      // Has firstName+lastName but no contactName → should count via fallback
+      { id: "c3", contactName: null, firstName: "Jane", lastName: "Smith", email: "jane@example.com", phone: "+15559876543", dateAdded: "2026-04-15T10:00:00.000Z" },
+      { id: "c4", contactName: null, firstName: null, lastName: null, email: null, phone: null, dateAdded: "2026-03-01T10:00:00.000Z" }, // before sinceMs
+    ];
+    mockedAxios.get = vi.fn().mockResolvedValueOnce(makePage(contacts));
+
+    const count = await fetchGhlLeadCount(LOCATION_ID, PRIVATE_TOKEN, sinceMs, untilMs);
+    // c1 (contactName) and c3 (firstName+lastName) qualify; c2 has no name; c4 is out of range
+    expect(count).toBe(2);
     expect(mockedAxios.get).toHaveBeenCalledTimes(1);
   });
 

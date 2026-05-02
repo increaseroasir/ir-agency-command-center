@@ -72,3 +72,11 @@
 - [x] Verified: last_30d now fetches 1 page (down from 11) for Acree Tree
 - [x] Verified: 77 in-range contacts, 0 qualified leads (correct GHL data)
 - [x] 7 new vitest tests for early-exit pagination — all 28 tests pass
+
+## GHL Lead Count Regression — Session 3
+- [x] Found root cause: GHL API returns 'contactName' not 'name' — filter was checking undefined field
+- [x] Fixed: use c.contactName ?? firstName+lastName fallback in lead filter
+- [x] Verified: 19 qualified leads confirmed via live API probe
+- [x] Added vitest test for contactName field — 29 tests passing
+- [x] Stale cache cleared
+- [ ] Push fix to GitHub and republish
