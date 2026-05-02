@@ -92,4 +92,15 @@
 - [x] Updated CPL Tiers stat card to show green / orange / red as three separate colored numbers
 - [x] orangeCount computed from insights (cplColor === 'orange')
 - [x] TypeScript clean, 36 tests passing
-- [ ] Save checkpoint, push to GitHub, and republish
+- [x] Saved checkpoint, pushed to GitHub (commit 3afc0cd), and republished
+
+## Standalone Auth — Replace Manus OAuth (Session 6)
+- [x] Add server-side login tRPC procedure: validate username/password against hardcoded accounts, sign JWT with JWT_SECRET, set httpOnly cookie
+- [x] Add server-side logout procedure: clear the session cookie
+- [x] Add server-side auth.me procedure: verify JWT from cookie, return user or null
+- [x] Remove Manus OAuth redirect logic from server (keep _core intact, just bypass OAuth flow)
+- [x] Build /login page: username + password form, calls trpc.auth.login, redirects to / on success
+- [x] Add route guard in App.tsx: redirect to /login if not authenticated
+- [x] Remove Manus login button / OAuth redirect from all pages
+- [x] Write vitest tests for the new login procedure (13 tests, 49 total passing)
+- [x] Save checkpoint, push to GitHub, and publish

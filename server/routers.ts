@@ -9,6 +9,8 @@ import { fetchGhlLeadCount } from "./lib/ghlApi";
 import { calculateCpl } from "./lib/cplCalculator";
 import { resolveDateRange } from "./lib/dateUtils";
 import pLimit from "p-limit";
+import { validateCredentials, signLocalJwt } from "./lib/localAuth";
+import { TRPCError } from "@trpc/server";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -337,6 +339,26 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
+
+    login: publicProcedure
+      .input(z.object({ username: z.string(), password: z.string() }))
+      .mutation(async ({ input, ctx }) => {
+        const user = validateCredentials(input.username, input.password);
+        if (!user) {
+          throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: 'Invalid username or password',
+          });
+        }
+        const token = await signLocalJwt(user);
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, token, {
+          ...cookieOptions,
+          maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+        });
+        return { success: true, user } as const;
+      }),
+
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
