@@ -44,3 +44,16 @@
 - [x] Vitest tests for CPL calculator (7 tests)
 - [x] Vitest tests for date utils (4 tests)
 - [x] Vitest auth logout test (1 test)
+- [x] Vitest tests for insights cache logic (9 tests)
+
+## Secrets & Environment Setup
+- [x] Store SUPABASE_DATABASE_URL in Manus Secrets panel
+- [x] Store META_TOKEN in Manus Secrets panel
+- [x] Store GHL_AGENCY_TOKEN in Manus Secrets panel
+- [x] Create .env.example with placeholder values only
+- [x] Update server/lib/db.ts to use SUPABASE_DATABASE_URL (not MySQL DATABASE_URL)
+- [x] Fix cache JSONB write: use sql.json() instead of JSON.stringify()
+- [x] Fix cache read: handle string-encoded legacy data gracefully
+- [x] Create TASK_STARTUP.md documenting env-check pattern for future tasks
+- [x] Run database migration against Supabase (all 3 tables created)
+- [ ] Commit all fixes and .env.example to GitHub

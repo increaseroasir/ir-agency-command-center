@@ -211,7 +211,14 @@ const insightsRouter = router({
         if (cached.length > 0) {
           const ageMs = Date.now() - new Date(cached[0].fetchedAt).getTime();
           if (ageMs < 60 * 60 * 1000) {
-            return { data: cached[0].data as ClientInsight[], fromCache: true, cachedAt: cached[0].fetchedAt };
+            // Handle both native JSONB array and legacy string-encoded data
+            const rawData = cached[0].data;
+            const parsedData: ClientInsight[] = Array.isArray(rawData)
+              ? rawData
+              : typeof rawData === 'string'
+              ? (JSON.parse(rawData) as ClientInsight[])
+              : [];
+            return { data: parsedData, fromCache: true, cachedAt: cached[0].fetchedAt };
           }
         }
       }
@@ -312,10 +319,10 @@ const insightsRouter = router({
         return b.cpl - a.cpl;
       });
 
-      // Store in cache
+      // Store in cache — use sql.json() to store as native JSONB array, not a string
       await sql`
         INSERT INTO insights_cache ("cacheKey", data, "fetchedAt")
-        VALUES (${cacheKey}, ${JSON.stringify(sorted)}, NOW())
+        VALUES (${cacheKey}, ${sql.json(sorted as any)}, NOW())
         ON CONFLICT ("cacheKey")
         DO UPDATE SET data = EXCLUDED.data, "fetchedAt" = NOW()
       `;

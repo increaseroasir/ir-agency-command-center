@@ -4,7 +4,7 @@
  */
 import { useState } from 'react';
 import { trpc } from '@/lib/trpc';
-import { ClientTable } from '@/components/ClientTable';
+import { ClientTable, ClientInsight } from '@/components/ClientTable';
 import { DateRangeSelector } from '@/components/DateRangeSelector';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,7 +52,9 @@ export default function Dashboard() {
     setDatePreset(value);
   };
 
-  const insights = data?.data ?? [];
+  // Ensure insights is always an array — cached JSONB may deserialize differently
+  const rawData = data?.data;
+  const insights: ClientInsight[] = Array.isArray(rawData) ? rawData : [];
 
   // Summary stats
   const totalSpend = insights.reduce((s, r) => s + r.spend, 0);
