@@ -56,4 +56,19 @@
 - [x] Fix cache read: handle string-encoded legacy data gracefully
 - [x] Create TASK_STARTUP.md documenting env-check pattern for future tasks
 - [x] Run database migration against Supabase (all 3 tables created)
-- [ ] Commit all fixes and .env.example to GitHub
+- [x] Commit all fixes and .env.example to GitHub
+
+## Bug Fixes — Session 2
+- [x] Fix GHL pagination: remove meta.total guard, paginate until page returns 0 contacts
+- [x] Update Acree Tree credentials in Supabase (metaAdAccountId, ghlLocationId, ghlPrivateToken)
+- [x] Bust cache — confirmed live fetch: $1,108.34 spend, 10s fetch, fromCache:false
+- [x] Cache serving subsequent requests in 46ms (fromCache:true)
+- [ ] Push fixes to GitHub and republish
+
+## GHL Date Filter Optimization — Session 2 cont.
+- [x] Audit: startAfter is a cursor (not a date filter) — startAfterDate returns 422
+- [x] Fix: use early-exit strategy (stop when last contact on page < sinceMs)
+- [x] Fix: use meta.startAfter + meta.startAfterId as cursor for next page
+- [x] Verified: last_30d now fetches 1 page (down from 11) for Acree Tree
+- [x] Verified: 77 in-range contacts, 0 qualified leads (correct GHL data)
+- [x] 7 new vitest tests for early-exit pagination — all 28 tests pass
