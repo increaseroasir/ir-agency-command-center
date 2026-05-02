@@ -63,7 +63,7 @@
 - [x] Update Acree Tree credentials in Supabase (metaAdAccountId, ghlLocationId, ghlPrivateToken)
 - [x] Bust cache — confirmed live fetch: $1,108.34 spend, 10s fetch, fromCache:false
 - [x] Cache serving subsequent requests in 46ms (fromCache:true)
-- [ ] Push fixes to GitHub and republish
+- [x] Push fixes to GitHub and republish (commit df1c2d9)
 
 ## GHL Date Filter Optimization — Session 2 cont.
 - [x] Audit: startAfter is a cursor (not a date filter) — startAfterDate returns 422
