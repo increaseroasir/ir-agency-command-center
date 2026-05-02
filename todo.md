@@ -79,4 +79,11 @@
 - [x] Verified: 19 qualified leads confirmed via live API probe
 - [x] Added vitest test for contactName field — 29 tests passing
 - [x] Stale cache cleared
-- [ ] Push fix to GitHub and republish
+- [x] Push fix to GitHub and republish (commit 828a07b)
+
+## Regression Test — GHL contactName Field (Session 4)
+- [x] Audited existing contactName test in ghlApi.test.ts
+- [x] Added dedicated regression describe block: "GHL contactName field — regression guard"
+- [x] 7 new tests: name=undefined rejected, name ignored (contactName used), contactName counts, firstName+lastName fallback, whitespace-only rejected, realistic 3/6 mix
+- [x] 36 tests passing (up from 29)
+- [ ] Commit to GitHub
