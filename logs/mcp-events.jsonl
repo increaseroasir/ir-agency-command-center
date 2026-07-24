@@ -1,0 +1,2 @@
+{"timestamp":"2025-07-23T00:00:00Z","tool":"update_workflow_actions","status":"unexpected_behavior","incident_id":"GHL-001","summary":"Replacement semantics: full action array wiped on update. Read-back caught it. Permanent rule added to GHL_PLATFORM_BEHAVIOR.md.","occurrences":1,"promoted":true}
+{"timestamp":"2025-07-23T00:00:00Z","tool":"create_workflow_action","status":"unknown_constraint","incident_id":"GHL-002","summary":"Action ceiling per workflow unknown. Probe required before Batch 3.","occurrences":1,"promoted":false}
