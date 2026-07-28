@@ -70,3 +70,27 @@
 - Vault (Google Sheets) is intentionally bypassed in this test build. The lead.js Worker was patched to make vault failures non-fatal so GHL and CAPI still fire. This patch must NOT be carried into production builds.
 - D1 database binding is not set — inventory endpoints will return empty results. This is expected for a snapshot test.
 - The `ALLOWED_ORIGIN` is set to `https://snapshot-test-7xz.pages.dev` (the actual Cloudflare-assigned subdomain, not `snapshot-test.pages.dev`).
+
+---
+
+## GHL_BASE_TAGS Verification — 2026-07-28
+
+**Change:** `GHL_BASE_TAGS = "new-lead"` added to `wrangler.toml` [vars] and set as plain env var on the CF Pages project via API.
+
+**Deployment:** `4d796fad.snapshot-test-7xz.pages.dev` (template SHA: `0c53a6e`)
+
+**Gate result:** 15 PASS / 0 FAIL / 9 MANUAL (--env prod)
+
+**Test lead proof:**
+- Submission: 2026-07-28
+- GHL Contact ID: `tbq74RtiqklXk7UPYGNv`
+- Email: newleadverify@test.com
+- Phone: +15550004444
+- **Tags confirmed on contact: `['src-organic', 'new-lead', 'intent - send price and availability']`**
+- `new-lead` tag present ✅ — automation entry tag verified live in GHL
+
+**Smoke:**
+- `/ → 200` ✅
+- `/api/lead OPTIONS → 204` ✅
+- `/hot-tubs.html → 301` ✅
+- `/nonsense-path → 404` ✅
