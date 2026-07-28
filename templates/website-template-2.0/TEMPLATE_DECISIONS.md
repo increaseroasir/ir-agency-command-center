@@ -36,3 +36,18 @@ Architectural decisions made in the template. Never contradict a recorded decisi
 **Retroactive fix for existing clients:** Set `GHL_BASE_TAGS = "new-lead"` as a plain env var in Cloudflare Pages → Settings → Environment variables → Production for each live client. Applied to: `snapshot-test`, `paradise-spas`, `sun-pool-spa`, `hottublaunch` on 2026-07-28 via CF Pages API.
 
 **Tag name is configurable:** If the automation trigger tag needs to change, update `GHL_BASE_TAGS` in `wrangler.toml` (template) and in each client's Cloudflare Pages env vars. No code changes required.
+
+---
+
+## 2026-07-28 — Purchase workflow uses `{{opportunity.lead_value}}` directly; no contact-field mirror needed
+
+**Decision:** The GHL Sold/Purchase stage-change webhook sends `"value": "{{opportunity.lead_value}}"` in the body. The Worker reads `body.value`, converts to number, and sends to Meta. No intermediate contact field mirror step is required.
+
+**Rationale:**
+- `{{opportunity.lead_value}}` was tested live and confirmed to resolve to the real value (`"5000"`) in the webhook body — unlike `{{opportunity.monetary_value}}` which sends empty (GHL-007).
+- The contact-field mirror pattern (write opportunity value to a contact custom field first, then send `{{contact.sale_value}}`) adds workflow complexity with no benefit when the source field already resolves.
+- The Worker's value fallback chain handles the empty-string case for all other events: `body.value → body.lead_value → body.actual_sale_value → META_VALUE_* env vars`. Purchase is the only event that hard-fails on missing value (correct per Meta spec).
+
+**Evidence:** Live Purchase webhook execution 2026-07-28 6:40pm ET. `diagnostic.value_received: "5000"`, `value: 5000` sent to Meta, `fbtrace_id: AskN5NlQTpp1olRVQ-mtUG-` confirmed.
+
+**Scope:** This decision applies only to `{{opportunity.lead_value}}`. Other opportunity system fields (`monetary_value`, `date_updated`) remain subject to GHL-007 and must not be used in webhook bodies without testing.

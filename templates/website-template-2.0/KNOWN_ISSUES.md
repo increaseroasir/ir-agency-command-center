@@ -59,3 +59,26 @@ curl -s -X POST "https://{DOMAIN}/api/meta-offline" \
   -d '{"event_name":"__ping__","email":"ping@test.com","phone":"5550000000"}' | grep -o '"skipped"\|"Unauthorized"'
 # Should return "skipped" (unknown event_name) not "Unauthorized"
 ```
+
+---
+
+## 2026-07-28 — GHL-007 clarification: `opportunity.lead_value` resolves; `opportunity.monetary_value` and `opportunity.date_updated` do not
+
+**Client:** snapshot-test (confirmed via live Purchase workflow execution)
+**Finding:** GHL-007 (opportunity fields send empty in webhook bodies) applies to **system opportunity fields** but NOT to all opportunity fields.
+
+**Confirmed field behavior in GHL webhook bodies:**
+
+| Field | Resolves? | Notes |
+|---|---|---|
+| `{{opportunity.monetary_value}}` | ❌ Empty | System field — GHL-007 confirmed |
+| `{{opportunity.date_updated}}` | ❌ Empty | System field — GHL-007 confirmed |
+| `{{opportunity.lead_value}}` | ✅ Resolves | Custom/mapped field — confirmed `"5000"` received |
+
+**Evidence:** GHL workflow execution log for Purchase webhook fired 2026-07-28 at 6:40pm ET. Endpoint diagnostic response: `"value_received": "5000"`, `fbtrace_id: AskN5NlQTpp1olRVQ-mtUG-`. Meta confirmed receipt. Contact: alex@increaseroas.com, contact ID in builder sub-account `8iqYr9YNiaTcGdEKl6UU`.
+
+**Implication for Purchase workflow:** `{{opportunity.lead_value}}` is safe to use in the Sold/Purchase webhook body as the `value` field. No contact-field mirror is needed for this specific field.
+
+**Implication for other opportunity fields:** Do not assume any other opportunity field resolves without testing. The safe pattern remains: for any opportunity field that needs to pass through a webhook, test it first with the diagnostic endpoint and confirm `value_received` is non-null.
+
+**Rule update:** GHL-007 is now scoped to "system opportunity fields" only. Custom/mapped opportunity fields (like `lead_value`) appear to resolve correctly. When in doubt, test with the diagnostic endpoint before building the workflow.
