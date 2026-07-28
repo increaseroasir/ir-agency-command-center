@@ -28,3 +28,34 @@ Every entry must include: date, what broke, what fixed it, which client first ex
 3. **`data-cfasync="false"`** is added to the pixel script tag to prevent Cloudflare Rocket Loader from deferring it.
 
 **Impact on future builds:** Any build that runs `build-config.mjs` with a valid `META_PIXEL_ID` will automatically have the pixel hardcoded into all HTML files. Any build that is missing `client.config.js` or the pixel injection will fail `scan-placeholders.mjs` before deployment.
+
+---
+
+## 2026-07-28 — GHL `meta_offline_webhook_secret` custom value out of sync with Cloudflare Worker secret
+
+**Client:** snapshot-test (first exposed)
+**What broke:** GHL offline webhook fired and reached the Worker (HTTP 200 response received by GHL) but returned `{"ok":false,"error":"Unauthorized"}`. GHL execution log showed `Failed`.
+
+**Root cause:** `META_OFFLINE_WEBHOOK_SECRET` was set on Cloudflare Pages via `wrangler pages secret put` using `printf` after an earlier failed attempt used `echo`. The two shell methods produced different base64 strings because `echo` appends a trailing newline which gets base64-encoded into the secret value. The GHL custom value `meta_offline_webhook_secret` was updated during initial setup but retained the value from the first (mangled) attempt. The two sides diverged silently — both were valid base64 strings, just different ones.
+
+**What fixed it:** Read the GHL custom value via the REST API (`GET /locations/{id}/customValues`), compared it character-by-character to the Cloudflare secret, found the divergence, and updated the GHL custom value to match exactly via `PUT /locations/{id}/customValues/{id}`.
+
+**Prevention rules — MUST be followed on every client wiring:**
+
+1. **Always use `printf '%s'` (not `echo`) when piping secrets into `wrangler pages secret put`** to avoid trailing-newline corruption.
+2. **After setting `META_OFFLINE_WEBHOOK_SECRET` on Cloudflare, immediately read back the GHL custom value via API and assert the two values are identical** before marking wiring complete. Never assume a previous update was correct.
+3. **The wiring verification script (`gate.mjs`) must include a secret-sync check** — fire a test POST to `/api/meta-offline` with the value stored in the GHL custom value and assert HTTP 200 (not 401). A 401 means the two sides are out of sync.
+
+**Shell command to verify sync (run after every secret rotation):**
+```bash
+GHL_SECRET=$(curl -s "https://services.leadconnectorhq.com/locations/{LOCATION_ID}/customValues" \
+  -H "Authorization: Bearer {PIT}" -H "Version: 2021-07-28" | \
+  python3 -c "import sys,json; cvs=json.load(sys.stdin).get('customValues',[]); \
+  print(next((c['value'] for c in cvs if 'webhook_secret' in c.get('name','')), 'NOT_FOUND'))")
+echo "GHL secret: $GHL_SECRET"
+curl -s -X POST "https://{DOMAIN}/api/meta-offline" \
+  -H "Authorization: Bearer $GHL_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"event_name":"__ping__","email":"ping@test.com","phone":"5550000000"}' | grep -o '"skipped"\|"Unauthorized"'
+# Should return "skipped" (unknown event_name) not "Unauthorized"
+```
